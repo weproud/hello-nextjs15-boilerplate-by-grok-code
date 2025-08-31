@@ -1,0 +1,8 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+
+- 작업을 시작할 때는 항상 기존 코드를 분석하고, 원인은 무엇이고, 어떻게 해결할 것인지 정리해서 공유한다
+- 작업을 완료 후 항상 bun run type-check를 실행해서 확인한다

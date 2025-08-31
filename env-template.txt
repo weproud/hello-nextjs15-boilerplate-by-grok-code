@@ -1,0 +1,38 @@
+# 환경 변수 설정 템플릿
+# 이 파일의 내용을 복사해서 .env.local 파일을 만드세요
+
+# Database
+DATABASE_URL="file:./prisma/dev.db"
+
+# NextAuth.js
+NEXTAUTH_SECRET="your-nextauth-secret-key-change-this-in-production"
+NEXTAUTH_URL="http://localhost:3000"
+
+# Google OAuth
+# 1. Google Cloud Console (https://console.cloud.google.com/) 접속
+# 2. 새 프로젝트 생성 또는 기존 프로젝트 선택
+# 3. "API 및 서비스" > "사용자 인증 정보" 메뉴 선택
+# 4. "사용자 인증 정보 만들기" > "OAuth 2.0 클라이언트 ID" 선택
+# 5. 애플리케이션 유형: "웹 애플리케이션"
+# 6. 승인된 리디렉션 URI: http://localhost:3000/api/auth/callback/google
+# 7. 생성된 클라이언트 ID와 클라이언트 보안 비밀번호를 아래에 입력
+AUTH_GOOGLE_ID="your-google-client-id"
+AUTH_GOOGLE_SECRET="your-google-client-secret"
+
+# Kakao OAuth
+# 1. Kakao Developers (https://developers.kakao.com/) 접속
+# 2. "내 애플리케이션" > "애플리케이션 추가" 선택
+# 3. 앱 아이콘과 이름 설정 (예: WeProud)
+# 4. "앱 키" 탭에서 REST API 키 확인
+# 5. "카카오 로그인" > "활성화 설정"에서 활성화
+# 6. Redirect URI: http://localhost:3000/api/auth/callback/kakao
+# 7. REST API 키를 클라이언트 ID로, Client Secret을 아래에 입력
+AUTH_KAKAO_ID="your-kakao-rest-api-key"
+AUTH_KAKAO_SECRET="your-kakao-client-secret"
+
+# PostHog Analytics (선택사항)
+# NEXT_PUBLIC_POSTHOG_KEY="your-posthog-project-api-key"
+# NEXT_PUBLIC_POSTHOG_HOST="https://app.posthog.com"
+
+# Development
+NODE_ENV="development"
