@@ -28,7 +28,7 @@ declare module "next-auth" {
   }
 }
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   return withErrorHandler(async () => {
     const session = await auth();
 

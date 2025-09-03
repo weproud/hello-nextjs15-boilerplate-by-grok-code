@@ -100,7 +100,7 @@ export const useUserStoreV2 = create<UserState>()(
               // 기본 액션들
               ...actions,
 
-              setUser: (user: any) => {
+              setUser: (user: UserProfile | null) => {
                 const newState = {
                   user,
                   isAuthenticated: !!user,
@@ -113,7 +113,7 @@ export const useUserStoreV2 = create<UserState>()(
                 userHistory.push({ ...get(), ...newState });
               },
 
-              updateUser: (updates: any) => {
+              updateUser: (updates: Partial<UserProfile>) => {
                 const currentUser = get().user;
                 if (!currentUser) return;
 
@@ -130,7 +130,9 @@ export const useUserStoreV2 = create<UserState>()(
                 });
               },
 
-              updatePreferences: (preferences: any) => {
+              updatePreferences: (
+                preferences: Partial<UserProfile["preferences"]>
+              ) => {
                 const currentUser = get().user;
                 if (!currentUser) return;
 
@@ -209,7 +211,7 @@ export const useUserStoreV2 = create<UserState>()(
           {
             name: "user-storage-v2",
             storage: createJSONStorage(() => localStorage),
-            partialize: (state: any) => ({
+            partialize: (state: Partial<UserState>) => ({
               user: state.user,
               isAuthenticated: state.isAuthenticated,
               sessionExpires: state.sessionExpires,
@@ -217,7 +219,7 @@ export const useUserStoreV2 = create<UserState>()(
             }),
             // 마이그레이션 함수
             version: 2,
-            migrate: (persistedState: any, version: number) => {
+            migrate: (persistedState: unknown, version: number) => {
               if (version === 0 || version === 1) {
                 // v1에서 v2로 마이그레이션
                 return {

@@ -118,8 +118,7 @@ export function ScreenReaderOnly({
   ...props
 }: {
   children: React.ReactNode;
-  [key: string]: any;
-}) {
+} & Record<string, unknown>) {
   return (
     <span className="sr-only" {...props}>
       {children}
@@ -135,8 +134,7 @@ export function LiveRegion({
 }: {
   children: React.ReactNode;
   priority?: "polite" | "assertive";
-  [key: string]: any;
-}) {
+} & Record<string, unknown>) {
   return (
     <div aria-live={priority} aria-atomic="true" className="sr-only" {...props}>
       {children}

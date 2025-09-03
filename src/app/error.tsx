@@ -37,7 +37,7 @@ const logError = (error: Error & { digest?: string }, context: string) => {
   }
 };
 
-export default function Error({
+export default function ErrorPage({
   error,
   reset,
 }: {
@@ -104,7 +104,9 @@ export default function Error({
               뒤로가기
             </Button>
             <Button
-              onClick={() => (window.location.href = "/")}
+              onClick={() => {
+                window.location.href = "/";
+              }}
               variant="outline"
             >
               <Home className="mr-2 h-4 w-4" />

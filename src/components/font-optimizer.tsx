@@ -90,10 +90,12 @@ export function FontOptimizer({ children }: FontOptimizerProps) {
 
       {/* 폰트 변수 설정 */}
       <div
-        style={{
-          ["--client-geist-sans" as any]: geistSans.style.fontFamily,
-          ["--client-geist-mono" as any]: geistMono.style.fontFamily,
-        }}
+        style={
+          {
+            "--client-geist-sans": geistSans.style.fontFamily,
+            "--client-geist-mono": geistMono.style.fontFamily,
+          } as React.CSSProperties
+        }
         className={fontsLoaded ? "font-loaded" : "font-loading"}
       >
         {children}

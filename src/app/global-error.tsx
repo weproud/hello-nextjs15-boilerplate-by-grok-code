@@ -90,7 +90,7 @@ export default function GlobalError({
   };
 
   return (
-    <html>
+    <html lang="ko">
       <body>
         <div className="min-h-screen flex items-center justify-center p-4 bg-gray-50">
           <Card className="w-full max-w-lg">
@@ -133,7 +133,9 @@ export default function GlobalError({
                 페이지 새로고침
               </Button>
               <Button
-                onClick={() => (window.location.href = "/")}
+                onClick={() => {
+                  window.location.href = "/";
+                }}
                 variant="outline"
                 className="w-full"
               >
