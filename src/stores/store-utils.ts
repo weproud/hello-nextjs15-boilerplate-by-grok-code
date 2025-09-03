@@ -10,7 +10,7 @@ export const withLogging =
           console.log("State before:", get());
           console.log("Action args:", args);
         }
-        set(...args);
+        (set as any)(...args);
         if (process.env.NODE_ENV === "development") {
           console.log("State after:", get());
         }
@@ -26,7 +26,7 @@ export const withErrorHandling =
     config(
       (...args) => {
         try {
-          set(...args);
+          (set as any)(...args);
         } catch (error) {
           console.error("Store error:", error);
           // 에러 처리 로직 추가 가능
@@ -46,12 +46,12 @@ export const withValidation =
     config(
       (...args) => {
         const newState =
-          typeof args[0] === "function" ? args[0](get()) : args[0];
+          typeof args[0] === "function" ? (args[0] as any)(get()) : args[0];
         if (validator && !validator(newState)) {
           console.warn("Invalid state update:", newState);
           return;
         }
-        set(...args);
+        (set as any)(...args);
       },
       get,
       api

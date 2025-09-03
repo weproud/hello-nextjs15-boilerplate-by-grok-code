@@ -60,7 +60,7 @@ export const defaultMetadata: Metadata = {
   verification: {
     google: "your-google-site-verification",
     yandex: "your-yandex-verification",
-    bing: "your-bing-verification",
+    // bing: "your-bing-verification", // Next.js에서는 지원하지 않음
   },
 };
 
@@ -78,7 +78,7 @@ export function createPageMetadata(
     author?: string;
     section?: string;
     tags?: string[];
-  },
+  }
 ): Metadata {
   const {
     keywords = [],
@@ -101,7 +101,7 @@ export function createPageMetadata(
       title,
       description,
       url,
-      type,
+      type: type as any,
       images: [
         {
           url: image,
@@ -110,17 +110,16 @@ export function createPageMetadata(
           alt: title,
         },
       ],
-      article:
-        type === "article"
-          ? {
-              publishedTime,
-              modifiedTime,
-              author,
-              section,
-              tags,
-            }
-          : undefined,
-    },
+      ...(type === "article" && {
+        article: {
+          publishedTime,
+          modifiedTime,
+          author,
+          section,
+          tags,
+        },
+      }),
+    } as any,
     twitter: {
       ...defaultMetadata.twitter,
       title,
@@ -133,7 +132,7 @@ export function createPageMetadata(
 // JSON-LD 구조화 데이터 생성 헬퍼
 export function createJsonLd(
   type: "WebSite" | "Article" | "Person",
-  data: Record<string, string | number | boolean | null | undefined>,
+  data: Record<string, string | number | boolean | null | undefined>
 ) {
   const baseData = {
     "@context": "https://schema.org",
@@ -148,7 +147,7 @@ export function createJsonLd(
 
 // Breadcrumb 구조화 데이터
 export function createBreadcrumbJsonLd(
-  items: Array<{ name: string; url: string }>,
+  items: Array<{ name: string; url: string }>
 ) {
   return {
     "@context": "https://schema.org",
@@ -210,7 +209,7 @@ export function createArticleJsonLd(article: {
 // SEO 최적화된 URL 생성
 export function createCanonicalUrl(
   path: string,
-  params?: Record<string, string>,
+  params?: Record<string, string>
 ) {
   const baseUrl = process.env.AUTH_URL || "http://localhost:3000";
   const url = new URL(path, baseUrl);
@@ -249,36 +248,42 @@ export function createMetaTags(metadata: Partial<Metadata>) {
   if (metadata.openGraph) {
     const og = metadata.openGraph;
     if (og.title) {
-      tags.push({ property: "og:title", content: og.title });
+      tags.push({ property: "og:title", content: String(og.title) });
     }
     if (og.description) {
       tags.push({ property: "og:description", content: og.description });
     }
-    if (og.type) {
-      tags.push({ property: "og:type", content: og.type });
+    if ((og as any).type) {
+      tags.push({ property: "og:type", content: String((og as any).type) });
     }
     if (og.url) {
-      tags.push({ property: "og:url", content: og.url });
+      tags.push({ property: "og:url", content: String(og.url) });
     }
     if (og.images && Array.isArray(og.images) && og.images[0]) {
-      tags.push({ property: "og:image", content: og.images[0].url });
+      tags.push({
+        property: "og:image",
+        content: String((og.images[0] as any).url),
+      });
     }
   }
 
   // Twitter Card tags
   if (metadata.twitter) {
     const twitter = metadata.twitter;
-    if (twitter.card) {
-      tags.push({ name: "twitter:card", content: twitter.card });
+    if ((twitter as any).card) {
+      tags.push({
+        name: "twitter:card",
+        content: String((twitter as any).card),
+      });
     }
     if (twitter.title) {
-      tags.push({ name: "twitter:title", content: twitter.title });
+      tags.push({ name: "twitter:title", content: String(twitter.title) });
     }
     if (twitter.description) {
       tags.push({ name: "twitter:description", content: twitter.description });
     }
     if (twitter.images && Array.isArray(twitter.images) && twitter.images[0]) {
-      tags.push({ name: "twitter:image", content: twitter.images[0] });
+      tags.push({ name: "twitter:image", content: String(twitter.images[0]) });
     }
   }
 

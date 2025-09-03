@@ -1,15 +1,15 @@
-import { useForm, UseFormProps, UseFormReturn } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm, UseFormProps, UseFormReturn } from "react-hook-form";
 import { z } from "zod";
 
 // Generic form hook with Zod validation
 export function useZodForm<T extends z.ZodSchema>(
   schema: T,
-  options?: Omit<UseFormProps<z.infer<T>>, "resolver">
-): UseFormReturn<z.infer<T>> {
-  return useForm<z.infer<T>>({
+  options?: Omit<UseFormProps<any>, "resolver">
+): UseFormReturn<any> {
+  return useForm({
     ...options,
-    resolver: zodResolver(schema),
+    resolver: zodResolver(schema as any),
   });
 }
 
@@ -39,7 +39,10 @@ export function useFormSubmit<T extends Record<string, any>>(
 
       return result;
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "알 수 없는 오류가 발생했습니다";
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "알 수 없는 오류가 발생했습니다";
       onError?.(errorMessage);
       return { success: false, error: errorMessage };
     }

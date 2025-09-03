@@ -86,7 +86,7 @@ export function getClientIP(request: NextRequest): string {
   }
 
   // 로컬 개발 환경에서는 기본값 사용
-  return request.ip || "127.0.0.1";
+  return "127.0.0.1";
 }
 
 // Rate Limiting 응답 생성

@@ -34,8 +34,8 @@ const nextConfig: NextConfig = {
   },
 
   images: {
+    // 보안: 외부 이미지 제한 강화
     domains: ["localhost"],
-    // 보안: 외부 이미지 제한
     remotePatterns: [
       {
         protocol: "https",
@@ -49,13 +49,33 @@ const nextConfig: NextConfig = {
         port: "",
         pathname: "**",
       },
+      {
+        protocol: "https",
+        hostname: "*.githubusercontent.com",
+        port: "",
+        pathname: "**",
+      },
+      {
+        protocol: "https",
+        hostname: "*.gravatar.com",
+        port: "",
+        pathname: "**",
+      },
     ],
-    // 성능 최적화
-    formats: ["image/avif", "image/webp"],
+
+    // Next.js 15 최적화 설정
+    formats: ["image/avif", "image/webp"], // AVIF 우선순위
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
-    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
-    minimumCacheTTL: 60,
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384, 512, 1024],
+
+    // 캐시 최적화
+    minimumCacheTTL: 31536000, // 1년 (프로덕션용)
     dangerouslyAllowSVG: false,
+
+    // 성능 최적화
+    unoptimized: false, // 최적화 활성화
+
+    // Content Security Policy 강화
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
 

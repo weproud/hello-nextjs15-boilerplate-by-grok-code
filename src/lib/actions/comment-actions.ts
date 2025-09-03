@@ -1,12 +1,13 @@
 "use server";
 
-import { revalidatePath, revalidateTag } from "next/cache";
-import { z } from "zod";
-import { prisma } from "@/lib/prisma";
+import { auth } from "@/lib/auth";
 import {
   COMMENT_CACHE_TAGS,
   createCachedCommentsQuery,
 } from "@/lib/cache-queries";
+import { prisma } from "@/lib/prisma";
+import { revalidatePath, revalidateTag } from "next/cache";
+import { z } from "zod";
 
 // Schemas
 export const createCommentSchema = z.object({
@@ -30,13 +31,18 @@ export async function createComment(formData: FormData) {
   "use server";
 
   try {
+    // 사용자 인증 확인
+    const session = await auth();
+    if (!session?.user?.id) {
+      return { success: false, error: "로그인이 필요합니다" };
+    }
+
     const validatedData = createCommentSchema.parse({
       content: formData.get("content"),
       postId: formData.get("postId"),
     });
 
-    // 현재 사용자 ID를 얻는 로직 (실제로는 세션에서 가져와야 함)
-    const authorId = "user-id"; // 임시
+    const authorId = session.user.id;
 
     const comment = await prisma.comment.create({
       data: {
@@ -75,10 +81,30 @@ export async function updateComment(formData: FormData) {
   "use server";
 
   try {
+    // 사용자 인증 확인
+    const session = await auth();
+    if (!session?.user?.id) {
+      return { success: false, error: "로그인이 필요합니다" };
+    }
+
     const validatedData = updateCommentSchema.parse({
       id: formData.get("id"),
       content: formData.get("content"),
     });
+
+    // 댓글 작성자 확인
+    const existingComment = await prisma.comment.findUnique({
+      where: { id: validatedData.id },
+      select: { authorId: true, postId: true },
+    });
+
+    if (!existingComment) {
+      return { success: false, error: "댓글을 찾을 수 없습니다" };
+    }
+
+    if (existingComment.authorId !== session.user.id) {
+      return { success: false, error: "댓글 수정 권한이 없습니다" };
+    }
 
     const comment = await prisma.comment.update({
       where: { id: validatedData.id },
@@ -109,13 +135,24 @@ export async function deleteComment(commentId: string) {
   "use server";
 
   try {
+    // 사용자 인증 확인
+    const session = await auth();
+    if (!session?.user?.id) {
+      return { success: false, error: "로그인이 필요합니다" };
+    }
+
     const comment = await prisma.comment.findUnique({
       where: { id: commentId },
-      select: { postId: true },
+      select: { postId: true, authorId: true },
     });
 
     if (!comment) {
       return { success: false, error: "댓글을 찾을 수 없습니다" };
+    }
+
+    // 댓글 작성자 확인
+    if (comment.authorId !== session.user.id) {
+      return { success: false, error: "댓글 삭제 권한이 없습니다" };
     }
 
     await prisma.comment.delete({

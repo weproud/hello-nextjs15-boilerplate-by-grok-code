@@ -1,9 +1,5 @@
 "use client";
 
-import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
-import { signIn } from "next-auth/react";
-import { Suspense, useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -19,12 +15,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { signIn } from "next-auth/react";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useState, useTransition } from "react";
 
-interface SignInProps {
-  isModal?: boolean;
-}
-
-function SignInWithSearchParams({ isModal = true }: SignInProps) {
+function SignInWithSearchParams({ isModal = true }: { isModal?: boolean }) {
   const [error, setError] = useState("");
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
@@ -153,10 +149,10 @@ function SignInWithSearchParams({ isModal = true }: SignInProps) {
   );
 }
 
-export default function SignIn({ isModal = true }: SignInProps) {
+export default function SignIn() {
   return (
     <Suspense fallback={<div>Loading...</div>}>
-      <SignInWithSearchParams isModal={isModal} />
+      <SignInWithSearchParams isModal={true} />
     </Suspense>
   );
 }

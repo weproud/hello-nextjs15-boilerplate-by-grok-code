@@ -1,8 +1,8 @@
 "use server";
 
+import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import { prisma } from "@/lib/prisma";
 
 // Schemas - Social login only, no email/password forms needed
 export const socialAuthSchema = z.object({
@@ -22,11 +22,11 @@ export async function handleSocialAuth(provider: "google" | "kakao") {
 
     return {
       success: true,
-      redirectUrl: authUrl
+      redirectUrl: authUrl,
     };
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return { success: false, errors: error.errors };
+      return { success: false, errors: error.flatten().fieldErrors };
     }
     return { success: false, error: "소셜 로그인 처리에 실패했습니다" };
   }

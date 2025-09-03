@@ -1,14 +1,15 @@
 "use server";
 
-import { revalidatePath, revalidateTag, unstable_cache } from "next/cache";
+import { auth } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import { prisma } from "@/lib/prisma";
 
 import {
   CACHE_TAGS,
-  createCachedPostsQuery,
   createCachedPostQuery,
+  createCachedPostsQuery,
 } from "@/lib/cache-queries";
 
 // Schemas
@@ -28,14 +29,19 @@ export const updatePostSchema = createPostSchema.extend({
 // Server Actions
 export async function createPost(formData: FormData) {
   try {
+    // 사용자 인증 확인
+    const session = await auth();
+    if (!session?.user?.id) {
+      return { success: false, error: "로그인이 필요합니다" };
+    }
+
     const validatedData = createPostSchema.parse({
       title: formData.get("title"),
       content: formData.get("content"),
       published: formData.get("published") === "true",
     });
 
-    // 현재 사용자 ID를 얻는 로직 (실제로는 세션에서 가져와야 함)
-    const authorId = "user-id"; // 임시
+    const authorId = session.user.id;
 
     const post = await prisma.post.create({
       data: {
@@ -76,12 +82,32 @@ export async function createPost(formData: FormData) {
 
 export async function updatePost(formData: FormData) {
   try {
+    // 사용자 인증 확인
+    const session = await auth();
+    if (!session?.user?.id) {
+      return { success: false, error: "로그인이 필요합니다" };
+    }
+
     const validatedData = updatePostSchema.parse({
       id: formData.get("id"),
       title: formData.get("title"),
       content: formData.get("content"),
       published: formData.get("published") === "true",
     });
+
+    // 게시물 작성자 확인
+    const existingPost = await prisma.post.findUnique({
+      where: { id: validatedData.id },
+      select: { authorId: true },
+    });
+
+    if (!existingPost) {
+      return { success: false, error: "게시물을 찾을 수 없습니다" };
+    }
+
+    if (existingPost.authorId !== session.user.id) {
+      return { success: false, error: "게시물 수정 권한이 없습니다" };
+    }
 
     const post = await prisma.post.update({
       where: { id: validatedData.id },
@@ -104,6 +130,7 @@ export async function updatePost(formData: FormData) {
     // 새로운 캐싱 API들 적용
     revalidateTag(CACHE_TAGS.POSTS);
     revalidateTag(CACHE_TAGS.POST(validatedData.id));
+    revalidateTag(CACHE_TAGS.USER_POSTS(session.user.id));
     revalidatePath("/posts");
     revalidatePath(`/posts/${post.id}`);
 
@@ -118,6 +145,12 @@ export async function updatePost(formData: FormData) {
 
 export async function deletePost(postId: string) {
   try {
+    // 사용자 인증 확인
+    const session = await auth();
+    if (!session?.user?.id) {
+      return { success: false, error: "로그인이 필요합니다" };
+    }
+
     // 게시물 존재 확인 및 작성자 정보 가져오기
     const post = await prisma.post.findUnique({
       where: { id: postId },
@@ -128,6 +161,11 @@ export async function deletePost(postId: string) {
       return { success: false, error: "게시물을 찾을 수 없습니다" };
     }
 
+    // 게시물 작성자 확인
+    if (post.authorId !== session.user.id) {
+      return { success: false, error: "게시물 삭제 권한이 없습니다" };
+    }
+
     await prisma.post.delete({
       where: { id: postId },
     });
@@ -135,7 +173,7 @@ export async function deletePost(postId: string) {
     // 새로운 캐싱 API들 적용
     revalidateTag(CACHE_TAGS.POSTS);
     revalidateTag(CACHE_TAGS.POST(postId));
-    revalidateTag(CACHE_TAGS.USER_POSTS(post.authorId));
+    revalidateTag(CACHE_TAGS.USER_POSTS(session.user.id));
     revalidatePath("/posts");
 
     redirect("/posts");
@@ -146,6 +184,12 @@ export async function deletePost(postId: string) {
 
 export async function togglePostPublish(postId: string) {
   try {
+    // 사용자 인증 확인
+    const session = await auth();
+    if (!session?.user?.id) {
+      return { success: false, error: "로그인이 필요합니다" };
+    }
+
     const post = await prisma.post.findUnique({
       where: { id: postId },
       select: { published: true, authorId: true },
@@ -153,6 +197,11 @@ export async function togglePostPublish(postId: string) {
 
     if (!post) {
       return { success: false, error: "게시물을 찾을 수 없습니다" };
+    }
+
+    // 게시물 작성자 확인
+    if (post.authorId !== session.user.id) {
+      return { success: false, error: "게시물 수정 권한이 없습니다" };
     }
 
     const updatedPost = await prisma.post.update({
@@ -167,7 +216,7 @@ export async function togglePostPublish(postId: string) {
     // 새로운 캐싱 API들 적용
     revalidateTag(CACHE_TAGS.POSTS);
     revalidateTag(CACHE_TAGS.POST(postId));
-    revalidateTag(CACHE_TAGS.USER_POSTS(post.authorId));
+    revalidateTag(CACHE_TAGS.USER_POSTS(session.user.id));
     revalidatePath("/posts");
     revalidatePath(`/posts/${postId}`);
 
@@ -186,14 +235,19 @@ export async function createPostAction(formData: FormData) {
   "use server";
 
   try {
+    // 사용자 인증 확인
+    const session = await auth();
+    if (!session?.user?.id) {
+      return { success: false, error: "로그인이 필요합니다" };
+    }
+
     const validatedData = createPostSchema.parse({
       title: formData.get("title"),
       content: formData.get("content"),
       published: formData.get("published") === "true",
     });
 
-    // 현재 사용자 ID를 얻는 로직 (실제로는 세션에서 가져와야 함)
-    const authorId = "user-id"; // 임시
+    const authorId = session.user.id;
 
     const post = await prisma.post.create({
       data: {

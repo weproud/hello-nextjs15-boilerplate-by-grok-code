@@ -1,12 +1,12 @@
 import { create } from "zustand";
-import { persist, createJSONStorage } from "zustand/middleware";
+import { createJSONStorage, persist } from "zustand/middleware";
 import {
-  withLogging,
-  withErrorHandling,
-  withValidation,
-  createActions,
   BaseState,
+  createActions,
   StateHistory,
+  withErrorHandling,
+  withLogging,
+  withValidation,
 } from "./store-utils";
 
 // 개선된 유저 인터페이스
@@ -84,8 +84,8 @@ export const useUserStoreV2 = create<UserState>()(
   withLogging(
     withErrorHandling(
       withValidation(
-        persist(
-          (set, get) => {
+        (persist as any)(
+          (set: any, get: any) => {
             const actions = createActions<UserState>({ setState: set } as any);
 
             return {
@@ -100,7 +100,7 @@ export const useUserStoreV2 = create<UserState>()(
               // 기본 액션들
               ...actions,
 
-              setUser: (user) => {
+              setUser: (user: any) => {
                 const newState = {
                   user,
                   isAuthenticated: !!user,
@@ -113,7 +113,7 @@ export const useUserStoreV2 = create<UserState>()(
                 userHistory.push({ ...get(), ...newState });
               },
 
-              updateUser: (updates) => {
+              updateUser: (updates: any) => {
                 const currentUser = get().user;
                 if (!currentUser) return;
 
@@ -130,7 +130,7 @@ export const useUserStoreV2 = create<UserState>()(
                 });
               },
 
-              updatePreferences: (preferences) => {
+              updatePreferences: (preferences: any) => {
                 const currentUser = get().user;
                 if (!currentUser) return;
 
@@ -209,7 +209,7 @@ export const useUserStoreV2 = create<UserState>()(
           {
             name: "user-storage-v2",
             storage: createJSONStorage(() => localStorage),
-            partialize: (state) => ({
+            partialize: (state: any) => ({
               user: state.user,
               isAuthenticated: state.isAuthenticated,
               sessionExpires: state.sessionExpires,

@@ -1,9 +1,9 @@
-import { type NextRequest } from "next/server";
+import { ApiResponses, withErrorHandler } from "@/lib/api-response";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { ApiResponses, withErrorHandler } from "@/lib/api-response";
-import { z } from "zod";
 import type { UserRole } from "@prisma/client";
+import { type NextRequest } from "next/server";
+import { z } from "zod";
 
 // 역할 업데이트 스키마
 const updateRoleSchema = z.object({
@@ -28,10 +28,7 @@ declare module "next-auth" {
   }
 }
 
-export async function GET(
-  request: NextRequest,
-  context: { params: Promise<{ nextauth: string[] }> }
-) {
+export async function GET(request: NextRequest) {
   return withErrorHandler(async () => {
     const session = await auth();
 

@@ -1,15 +1,16 @@
-import { PrismaAdapter } from "@auth/prisma-adapter";
-import type { JWT, NextAuthOptions, Session } from "next-auth";
-import NextAuth from "next-auth";
-import GoogleProvider from "next-auth/providers/google";
-import KakaoProvider from "next-auth/providers/kakao";
 import { hasGoogleAuth, hasKakaoAuth } from "@/lib/env";
 import { prisma } from "@/lib/prisma";
+import { PrismaAdapter } from "@auth/prisma-adapter";
+import type { NextAuthConfig, Session } from "next-auth";
+import NextAuth from "next-auth";
+import type { JWT } from "next-auth/jwt";
+import GoogleProvider from "next-auth/providers/google";
+import KakaoProvider from "next-auth/providers/kakao";
 
-export const authOptions: NextAuthOptions = {
+export const authOptions: NextAuthConfig = {
   adapter: PrismaAdapter(prisma),
   providers: [
-    ...(hasGoogleAuth
+    ...(hasGoogleAuth()
       ? [
           GoogleProvider({
             clientId: process.env.AUTH_GOOGLE_ID || "",
@@ -17,7 +18,7 @@ export const authOptions: NextAuthOptions = {
           }),
         ]
       : []),
-    ...(hasKakaoAuth
+    ...(hasKakaoAuth()
       ? [
           KakaoProvider({
             clientId: process.env.AUTH_KAKAO_ID || "",
@@ -40,7 +41,7 @@ export const authOptions: NextAuthOptions = {
 
       // 세션에 사용자 역할 추가
       if (token.role) {
-        session.user.role = token.role;
+        session.user.role = token.role as any;
       }
 
       return session;
